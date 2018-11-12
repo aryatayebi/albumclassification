@@ -1,4 +1,4 @@
-##### album-classification
+# album-classification
 Repository for album genre classification project
 
 Our goal of this project is to explore different machine learning classification methods. To do this, we will attempt to classify an albums genre through its cover art. Albums of the same genre often have similar album art themes. For example, country albums often depict a full body shot of the artist, and contain a guitar, banjo, or other musical instrument related to country music.
