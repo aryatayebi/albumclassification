@@ -28,7 +28,7 @@ class Dataset():
         album_image_url = []
         album_image = []
         genre_list = ['electronic', 'indie', 'pop', 'metal', 'alternative rock', 'classic rock',
-                      'jazz', 'folk', 'punk', 'Hip-Hop', 'Classical', 'rap']
+                      'jazz', 'folk', 'Hip-Hop', 'Classical']
 
         for genre in genre_list:
             response = requests.get(_API_ROOT + "?method=tag.gettopalbums&tag=" + genre +
@@ -62,15 +62,21 @@ class Dataset():
             else:
                 print("Error loading image " + url)
 
-
-        self.train = pd.DataFrame(
+        # create data frame with all samples loaded
+        all_data = pd.DataFrame(
             {'name': album_name,
              'genre': album_genre,
              'image_url': album_image_url,
              'image': album_image
              })
 
+        # shuffle the data
+        all_data = all_data.sample(frac=1).reset_index(drop=True)
 
+        # split data in train/validate/test with 80%/10%/10% of rows from all_data
+        self.train = all_data.iloc[:800]
+        self.validate = all_data.iloc[800:900]
+        self.test = all_data.iloc[900:1000]
 
 
 if __name__=='__main__':
@@ -78,7 +84,9 @@ if __name__=='__main__':
     apiKey = "18a7c1e4adc3bc81521a35f3f4f3a7bf"
     data = Dataset(apiKey)
 
-    for index, row in data.train.iterrows():
-        print(row['name'] + "  " + row['genre'])
+    # sanity check for correct number of rows
+    assert data.train.shape[0] == 800
+    assert data.validate.shape[0] == 100
+    assert data.validate.shape[0] == 100
 
     print("loadData is complete")
