@@ -13,13 +13,19 @@ _NUM_ROWS_TRAIN_PER_GENRE = 100
 class Dataset():
     """Dataset class for album classification"""
 
-    def __init__(self, param_1):
+    def __init__(self, param_1, param_2):
         """  Loads data from last.fm API
 
             ARGS:
                 param_1: personal api_key to access last.fm API calls
 
         """
+
+        num_rows_train_per_genre = "100"
+
+        if param_2 == True:
+            num_rows_train_per_genre = "10"
+
 
         self.api_key = param_1
 
@@ -32,7 +38,7 @@ class Dataset():
 
         for genre in genre_list:
             response = requests.get(_API_ROOT + "?method=tag.gettopalbums&tag=" + genre +
-                                    "&limit=100&api_key="+ self.api_key + "&format=json")
+                                    "&limit=" + num_rows_train_per_genre + ",&api_key="+ self.api_key + "&format=json")
             data01 = response.json()
 
             if response.status_code == 200:
@@ -76,7 +82,8 @@ class Dataset():
 if __name__=='__main__':
 
     apiKey = "18a7c1e4adc3bc81521a35f3f4f3a7bf"
-    data = Dataset(apiKey)
+    debug = True
+    data = Dataset(apiKey, debug)
 
     for index, row in data.train.iterrows():
         print(row['name'] + "  " + row['genre'])
