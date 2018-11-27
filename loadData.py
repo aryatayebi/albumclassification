@@ -74,9 +74,9 @@ class Dataset():
         self.all_data = all_data.sample(frac=1).reset_index(drop=True)
 
         # split data in train/validate/test with 80%/10%/10% of rows from all_data
-        self.train = all_data.iloc[:800]
-        self.validate = all_data.iloc[800:900]
-        self.test = all_data.iloc[900:1000]
+        self.train = self.all_data.iloc[:800]
+        self.validate = self.all_data.iloc[800:900]
+        self.test = self.all_data.iloc[900:1000]
 
         def preprocessKNN(self):
             """Preprocesses data for kNN
@@ -119,7 +119,7 @@ if __name__=='__main__':
     assert data.validate.shape[0] == 100
     assert data.test.shape[0] == 100
 
-    trainKnn, validateKNN, testKNN = data.preprocessKNN()
+    trainKNN, validateKNN, testKNN = data.preprocessKNN()
     assert trainKNN.shape[0] == 800
     assert validateKNN.shape[0] == 100
     assert testKNN.shape[0] == 100
