@@ -13,7 +13,7 @@ _NUM_ROWS_TRAIN_PER_GENRE = 100
 class Dataset():
     """Dataset class for album classification"""
 
-    def __init__(self, param_1, param_2):
+    def __init__(self, param_1, debug=False):
         """  Loads data from last.fm API
 
             ARGS:
@@ -23,7 +23,7 @@ class Dataset():
 
         num_rows_train_per_genre = "100"
 
-        if param_2 == True:
+        if debug == True:
             num_rows_train_per_genre = "10"
 
 
@@ -79,38 +79,47 @@ class Dataset():
         # shuffle the data
         self.all_data = all_data.sample(frac=1).reset_index(drop=True)
 
+        self.train_size = 80
+        self.validate_size = 10
+        self.test_size = 10
+
+        if not debug:
+            self.train_size = self.train_size * 10
+            self.validate_size = self.validate_size * 10
+            self.test_size = self.test_size * 10
+
         # split data in train/validate/test with 80%/10%/10% of rows from all_data
-        self.train = self.all_data.iloc[:800]
-        self.validate = self.all_data.iloc[800:900]
-        self.test = self.all_data.iloc[900:1000]
+        self.train = self.all_data.iloc[:self.train_size]
+        self.validate = self.all_data.iloc[self.train_size:(self.train_size + self.validate_size)]
+        self.test = self.all_data.iloc[(self.train_size + self.validate_size):]
 
-        def preprocessKNN(self):
-            """Preprocesses data for kNN
+    def preprocessKNN(self):
+        """Processes data for kNN
 
-            Returns:
-                Train data, validate data, test data
-            """
+        Returns:
+            Train data, validate data, test data
+        """
 
-            feature_list = []
+        feature_list = []
 
-            for row in self.all_data:
-                chans = cv2.split(row['image'])
+        for index, row in self.all_data.iterrows():
+            chans = cv2.split(row['image'])
 
-                features = []
-                for chan in chans:
-                    hist = cv2.calcHist(chan, [0], None, [256], [0,256])
-                    features.extend(hist)
+            features = []
+            for chan in chans:
+                hist = cv2.calcHist(chan, [0], None, [256], [0,256])
+                features.extend(hist)
 
-                features = np.array(features).flatten()
-                feature_list.append(features)
+            features = np.array(features).flatten()
+            feature_list.append(features)
 
-            df = self.all_data[['name'], ['genre']].copy()
+        df = self.all_data[['name', 'genre']].copy()
 
-            feature_df = pd.DataFrame( feature_list )
+        feature_df = pd.DataFrame(feature_list)
 
-            df = df.join(feature_df)
+        df = df.join(feature_df)
 
-            return df.iloc[:800], df.iloc[800:900], df.iloc[900:1000]
+        return df.iloc[:self.train_size], df.iloc[self.train_size:(self.train_size + self.validate_size)], df.iloc[(self.train_size + self.validate_size):]
 
 
 
@@ -122,13 +131,13 @@ if __name__=='__main__':
     data = Dataset(apiKey, debug)
 
     # sanity check for correct number of rows
-    assert data.train.shape[0] == 800
-    assert data.validate.shape[0] == 100
-    assert data.test.shape[0] == 100
+    assert data.train.shape[0] == 80
+    assert data.validate.shape[0] == 10
+    assert data.test.shape[0] == 10
 
     trainKNN, validateKNN, testKNN = data.preprocessKNN()
-    assert trainKNN.shape[0] == 800
-    assert validateKNN.shape[0] == 100
-    assert testKNN.shape[0] == 100
+    assert trainKNN.shape[0] == 80
+    assert validateKNN.shape[0] == 10
+    assert testKNN.shape[0] == 10
 
     print("loadData is complete")
