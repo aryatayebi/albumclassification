@@ -6,6 +6,7 @@ import json
 import shutil
 import requests
 import cv2
+import math
 
 _API_ROOT = "http://ws.audioscrobbler.com/2.0/"
 _NUM_ROWS_TRAIN_PER_GENRE = 100
@@ -53,7 +54,6 @@ class Dataset():
                 print('Error requesting API for ' + genre)
 
         for url in album_image_url:
-            print(url)
             img = requests.get(url, stream=True)
 
             if img.status_code == 200:
@@ -78,20 +78,14 @@ class Dataset():
 
         # shuffle the data
         self.all_data = all_data.sample(frac=1).reset_index(drop=True)
-
-        self.train_size = 80
-        self.validate_size = 10
-        self.test_size = 10
-
-        if not debug:
-            self.train_size = self.train_size * 10
-            self.validate_size = self.validate_size * 10
-            self.test_size = self.test_size * 10
+        dataLen = self.all_data.shape[0]
+        length80 = math.floor(dataLen * 0.8)
+        length10 = math.floor(dataLen * 0.1)
 
         # split data in train/validate/test with 80%/10%/10% of rows from all_data
-        self.train = self.all_data.iloc[:self.train_size]
-        self.validate = self.all_data.iloc[self.train_size:(self.train_size + self.validate_size)]
-        self.test = self.all_data.iloc[(self.train_size + self.validate_size):]
+        self.train = self.all_data.iloc[:length80]
+        self.validate = self.all_data.iloc[length80:(length80 + length10)]
+        self.test = self.all_data.iloc[(length80 + length10):]
 
     def preprocessKNN(self):
         """Processes data for kNN
@@ -119,7 +113,11 @@ class Dataset():
 
         df = df.join(feature_df)
 
-        return df.iloc[:self.train_size], df.iloc[self.train_size:(self.train_size + self.validate_size)], df.iloc[(self.train_size + self.validate_size):]
+        dataLen = df.shape[0]
+        length80 = math.floor(dataLen * 0.8)
+        length10 = math.floor(dataLen * 0.1)
+
+        return df.iloc[:length80], df.iloc[length80:(length80 + length10)], df.iloc[(length80 + length10):]
 
 
 
