@@ -78,14 +78,14 @@ class Dataset():
 
         # shuffle the data
         self.all_data = all_data.sample(frac=1).reset_index(drop=True)
-        dataLen = self.all_data.shape[0]
-        length80 = math.floor(dataLen * 0.8)
-        length10 = math.floor(dataLen * 0.1)
+        # dataLen = self.all_data.shape[0]
+        # length80 = math.floor(dataLen * 0.8)
+        # length10 = math.floor(dataLen * 0.1)
 
         # split data in train/validate/test with 80%/10%/10% of rows from all_data
-        self.train = self.all_data.iloc[:length80]
-        self.validate = self.all_data.iloc[length80:(length80 + length10)]
-        self.test = self.all_data.iloc[(length80 + length10):]
+        # self.train = self.all_data.iloc[:length80]
+        # self.validate = self.all_data.iloc[length80:(length80 + length10)]
+        # self.test = self.all_data.iloc[(length80 + length10):]
 
     def preprocessKNN(self):
         """Processes data for kNN
@@ -113,12 +113,13 @@ class Dataset():
 
         df = df.join(feature_df)
 
-        dataLen = df.shape[0]
-        length80 = math.floor(dataLen * 0.8)
-        length10 = math.floor(dataLen * 0.1)
+        # dataLen = df.shape[0]
+        # length80 = math.floor(dataLen * 0.8)
+        # length10 = math.floor(dataLen * 0.1)
 
-        return df.iloc[:length80], df.iloc[length80:(length80 + length10)], df.iloc[(length80 + length10):]
+        # return df.iloc[:length80], df.iloc[length80:(length80 + length10)], df.iloc[(length80 + length10):]
 
+        return df
 
 
 
@@ -129,13 +130,15 @@ if __name__=='__main__':
     data = Dataset(apiKey, debug)
 
     # sanity check for correct number of rows
-    assert data.train.shape[0] == 80
-    assert data.validate.shape[0] == 10
-    assert data.test.shape[0] == 10
+    # assert data.train.shape[0] == 80
+    # assert data.validate.shape[0] == 10
+    # assert data.test.shape[0] == 10
 
-    trainKNN, validateKNN, testKNN = data.preprocessKNN()
-    assert trainKNN.shape[0] == 80
-    assert validateKNN.shape[0] == 10
-    assert testKNN.shape[0] == 10
+    knnData = data.preprocessKNN()
+    # assert trainKNN.shape[0] == 80
+    # assert validateKNN.shape[0] == 10
+    # assert testKNN.shape[0] == 10
+
+    print(knnData)
 
     print("loadData is complete")

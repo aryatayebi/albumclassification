@@ -1,5 +1,6 @@
 import loadData
 from sklearn.svm import SVC
+from sklearn.model_selection import train_test_split
 import numpy as np
 
 def calcScore(c, gamma, trainFeat, trainLabel, testFeat, testLabel):
@@ -24,14 +25,12 @@ def main():
     data = loadData.Dataset(apiKey)
 
     print("Preprocessing...")
-    trainKNN, validateKNN, testKNN = data.preprocessKNN()
+    allData = data.preprocessKNN()
 
-    trainFeat = trainKNN.iloc[:, 2:].values
-    trainLabel = trainKNN.iloc[:, 1].values
+    X = allData.iloc[:, 2:].values
+    y = allData.iloc[:, 1].values
 
-    validateFeat = validateKNN.iloc[:, 2:].values
-    validateLabel = validateKNN.iloc[:, 1].values
-
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=33, stratify=y)
 
     # data will likely not be linearly seperable, so we will use rbf for kernel
     # large C: lower bias, higher variance
@@ -40,9 +39,8 @@ def main():
     steps = np.array([0.01, 0.05, 0.1, 0.5, 1, 5, 10, 50])
     for i in steps:
         for j in steps:
-            print("C = %g, sig_squared = %g, percentage score = %g" % (i, j, calcScore(i, j, trainFeat, trainLabel, validateFeat, validateLabel) / len(validateLabel)))
-
-
+            print("C = %g, gamma = %g, score = %g" %
+                  (i, j, calcScore(i, j, X_train, y_train, X_test, y_test) / len(y_test)))
 
 
 if __name__ == '__main__':

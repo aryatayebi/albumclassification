@@ -1,5 +1,6 @@
 import loadData
 from sklearn.neighbors import KNeighborsClassifier
+from sklearn.model_selection import train_test_split
 import numpy as np
 
 
@@ -18,26 +19,24 @@ def main():
     data = loadData.Dataset(apiKey)
 
     print("Preprocessing...")
-    trainKNN, validateKNN, testKNN = data.preprocessKNN()
+    knnData = data.preprocessKNN()
 
-    trainFeat = trainKNN.iloc[:,2:].values
-    trainLabel = trainKNN.iloc[:,1].values
+    X = knnData.iloc[:,2:].values
+    y = knnData.iloc[:,1].values
 
-
-    validateFeat = validateKNN.iloc[:,2:].values
-    validateLabel = validateKNN.iloc[:,1].values
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=33, stratify=y)
 
 
     steps = np.array([1, 3, 5, 10, 25, 100])
 
     print("Uniform Weights")
     for s in steps:
-        print("N = %g, accuracy = %g" % (s, calcScore(s, 'uniform', trainFeat, trainLabel, validateFeat, validateLabel)))
+        print("N = %g, accuracy = %g" % (s, calcScore(s, 'uniform', X_train, y_train, X_test, y_test)))
 
     print("Distance Weights")
     for s in steps:
         print(
-            "N = %g, accuracy = %g" % (s, calcScore(s, 'distance', trainFeat, trainLabel, validateFeat, validateLabel)))
+            "N = %g, accuracy = %g" % (s, calcScore(s, 'distance', X_train, y_train, X_test, y_test)))
 
 
 if __name__ == '__main__':
