@@ -1,5 +1,16 @@
 import loadData
 from sklearn.neighbors import KNeighborsClassifier
+import numpy as np
+
+
+def calcScore(neighbors, weight, trainFeat, trainLabel, testFeat, testLabel):
+    model = KNeighborsClassifier(n_neighbors=neighbors, weights=weight)
+    model.fit(trainFeat, trainLabel)
+
+    accuracy = model.score(testFeat, testLabel)
+    return accuracy
+
+
 
 def main():
     print('Loading dataset...')
@@ -9,26 +20,24 @@ def main():
     print("Preprocessing...")
     trainKNN, validateKNN, testKNN = data.preprocessKNN()
 
-    print(trainKNN.shape)
-    print(validateKNN.shape)
-    print(testKNN.shape)
-
     trainFeat = trainKNN.iloc[:,2:].values
     trainLabel = trainKNN.iloc[:,1].values
-    print(trainFeat)
-    print(trainLabel)
+
 
     validateFeat = validateKNN.iloc[:,2:].values
     validateLabel = validateKNN.iloc[:,1].values
-    print(validateFeat)
-    print(validateLabel)
-
-    model = KNeighborsClassifier(n_neighbors=5)
-    model.fit(trainFeat, trainLabel)
-    accuracy = model.score(validateFeat, validateLabel)
-    print(accuracy)
 
 
+    steps = np.array([1, 3, 5, 10, 25, 100])
+
+    print("Uniform Weights")
+    for s in steps:
+        print("N = %g, accuracy = %g" % (s, calcScore(s, 'uniform', trainFeat, trainLabel, validateFeat, validateLabel)))
+
+    print("Distance Weights")
+    for s in steps:
+        print(
+            "N = %g, accuracy = %g" % (s, calcScore(s, 'distance', trainFeat, trainLabel, validateFeat, validateLabel)))
 
 
 if __name__ == '__main__':
