@@ -1,3 +1,5 @@
+import scipy
+from sklearn.utils import shuffle
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -30,7 +32,7 @@ class Dataset():
         num_rows_train_per_genre = "100"
 
         if param_2 == True:
-            num_rows_train_per_genre = "25"
+            num_rows_train_per_genre = "100"
 
 
         self.api_key = param_1
@@ -39,7 +41,7 @@ class Dataset():
         album_genre = []
         album_image_url = []
         album_image = []
-        genre_list = ['electronic', 'indie']
+        genre_list = ['electronic', 'indie', 'pop']
             #, 'indie', 'pop', 'metal', 'alternative rock', 'classic rock',
             #          'jazz', 'folk', 'Hip-Hop', 'Classical']
 
@@ -109,7 +111,7 @@ if __name__=='__main__':
     apiKey = "a613f20df66b863fd728baf41ff909d5"
     debug = True
     data = Dataset(apiKey, debug)
-
+    data = shuffle(data.train)
     #for index, row in data.train.iterrows():
     #    print(row['name'] + "  " + row['genre'])
 
