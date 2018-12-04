@@ -28,11 +28,12 @@ class Cnn(torch.nn.Module):
 
 
 class Train():
-    def __init__(self, trainloader):
+    def __init__(self, trainloader,testloader):
         self.net = Cnn()
         self.criterion = torch.nn.CrossEntropyLoss()
         self.optimizer = lfunc.SGD(self.net.parameters(), lr=0.001, momentum=0.9)
         self.training(trainloader)
+        self.test(testloader)
 
     def training(self, trainloader):
         for epoch in range(2):  # loop over the dataset multiple times
@@ -62,7 +63,19 @@ class Train():
 
         print('Finished Training')
 
+    def test(self, testloader):
+        correct = 0
+        total = 0
+        with torch.no_grad():
+            for data in testloader:
+                images, labels = data
+                outputs = self.net(images.float())
+                _, predicted = torch.max(outputs.data, 1)
+                total += labels.size(0)
+                correct += (predicted == labels).sum().item()
 
+        print('Accuracy of the network on the test images: %d %%' % (
+                100 * correct / total))
 
 
 
@@ -76,33 +89,41 @@ class PreProcessCnn():
 
     def __init__(self, data):
 
-        labels = np.zeros(50, dtype=int)
+        labels = np.zeros(150, dtype=int)
         #print(type(data.train.album_image))
         a = []
         i = 0
-        for index, row in data.train.iterrows():
+        for index, row in data.iterrows():
             genre = row['genre']
+
             if (genre == 'electronic'):
                 labels[i] = 0
+                #print('electronic')
+
             if (genre == 'indie'):
                 labels[i] = 1
+
+            if (genre == 'pop'):
+                labels[i] = 2
+                #print('indie')
             img = (row['image'])
-            img2 = cv2.resize(img,(32, 32))
+            img2 = cv2.resize(img, (32, 32))
             tp = np.transpose(img2)
             a.append(tp)
-            i = i + 1
 
+
+
+            i = i + 1
 
         a = np.array(a)
         a = torch.from_numpy(a)
         labels = torch.from_numpy(labels)
         train_data = torch.utils.data.TensorDataset(a, labels)
-        trainloader = torch.utils.data.DataLoader(train_data, batch_size=25)
-        trainData = Train(trainloader)
+        trainloader = torch.utils.data.DataLoader(train_data, batch_size=140, shuffle=True)
+        testloader = torch.utils.data.DataLoader(train_data, batch_size=10, shuffle=True)
+        trainData = Train(trainloader,testloader)
 
 """
-    if (genre == 'indie'):
-        labels.append(0)
     if (genre == 'pop'):
         labels.append(0)
     if (genre == 'metal'):
