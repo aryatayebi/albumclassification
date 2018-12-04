@@ -1,16 +1,16 @@
 import loadData
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.model_selection import train_test_split
+from sklearn.model_selection import cross_val_score
 import numpy as np
+from matplotlib import pyplot as plt
 
 
-def calcScore(neighbors, weight, trainFeat, trainLabel, testFeat, testLabel):
+def calcScore(neighbors, weight, X, y):
     model = KNeighborsClassifier(n_neighbors=neighbors, weights=weight)
-    model.fit(trainFeat, trainLabel)
+    scores = cross_val_score(model, X, y, cv=50, scoring='accuracy')
 
-    accuracy = model.score(testFeat, testLabel)
-    return accuracy
-
+    return scores.mean()
 
 
 def main():
@@ -24,20 +24,32 @@ def main():
     X = knnData.iloc[:,2:].values
     y = knnData.iloc[:,1].values
 
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=33, stratify=y)
+    # X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=33, stratify=y)
 
 
-    steps = np.array([1, 3, 5, 10, 25, 100])
+    steps = np.array(range(2,52,2))
+
+    cv_scores1 = []
+    cv_scroes2 = []
 
     print("Uniform Weights")
     for s in steps:
-        print("N = %g, accuracy = %g" % (s, calcScore(s, 'uniform', X_train, y_train, X_test, y_test)))
+        score = calcScore(s, 'uniform', X, y)
+        cv_scores1.append(score)
+        print("N = %g, accuracy = %g" % (s, score))
 
     print("Distance Weights")
     for s in steps:
+        score = calcScore(s, 'distance', X, y)
+        cv_scroes2.append(score)
         print(
-            "N = %g, accuracy = %g" % (s, calcScore(s, 'distance', X_train, y_train, X_test, y_test)))
+            "K = %g, accuracy = %g" % (s, calcScore(s, 'distance', X, y)))
 
+    plt.plot(steps, cv_scores1)
+    plt.title('KNN Model (Using Uniform Weights)')
+    plt.xlabel('Number of Neighbors (K)')
+    plt.ylabel('Model Accuracy')
+    plt.show()
 
 if __name__ == '__main__':
     main()

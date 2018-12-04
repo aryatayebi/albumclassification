@@ -101,7 +101,7 @@ class Dataset():
 
             features = []
             for chan in chans:
-                hist = cv2.calcHist(chan, [0], None, [256], [0,256])
+                hist = cv2.calcHist(chan, [0], None, [64], [0,256])
                 features.extend(hist)
 
             features = np.array(features).flatten()
