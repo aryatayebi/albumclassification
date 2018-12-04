@@ -18,7 +18,6 @@ class Cnn(torch.nn.Module):
         self.fc3 = torch.nn.Linear(84, 10)
 
     def forward(self, x):
-        print(x.size())
         x = self.pool(F.relu(self.conv1(x)))
         x = self.pool(F.relu(self.conv2(x)))
         x = x.view(-1, 16 * 5 * 5)
@@ -56,10 +55,10 @@ class Train():
 
                 # print statistics
                 running_loss += loss.item()
-                if i % 2000 == 1999:  # print every 2000 mini-batches
-                    print('[%d, %5d] loss: %.3f' %
-                          (epoch + 1, i + 1, running_loss / 2000))
-                    running_loss = 0.0
+                #if i % 2000 == 1999:  # print every 2000 mini-batches
+                print('[%d, %5d] loss: %.3f' %
+                      (epoch + 1, i + 1, running_loss / 2000))
+                running_loss = 0.0
 
         print('Finished Training')
 
@@ -77,21 +76,28 @@ class PreProcessCnn():
 
     def __init__(self, data):
 
-        labels = np.zeros(1, dtype=int)
+        labels = np.zeros(50, dtype=int)
         #print(type(data.train.album_image))
         a = []
+        i = 0
         for index, row in data.train.iterrows():
             genre = row['genre']
             if (genre == 'electronic'):
-                labels[0] = 1
+                labels[i] = 0
+            if (genre == 'indie'):
+                labels[i] = 1
             img = (row['image'])
             img2 = cv2.resize(img,(32, 32))
             tp = np.transpose(img2)
             a.append(tp)
+            i = i + 1
+
+
         a = np.array(a)
+        a = torch.from_numpy(a)
         labels = torch.from_numpy(labels)
-        train_data = torch.utils.data.TensorDataset(torch.from_numpy(a), labels)
-        trainloader = torch.utils.data.DataLoader(train_data, batch_size=2)
+        train_data = torch.utils.data.TensorDataset(a, labels)
+        trainloader = torch.utils.data.DataLoader(train_data, batch_size=25)
         trainData = Train(trainloader)
 
 """
