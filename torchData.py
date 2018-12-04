@@ -5,6 +5,7 @@ import torchvision
 import torchvision.transforms as transforms
 import matplotlib.pyplot as plt
 import numpy as np
+import cv2
 
 class Cnn(torch.nn.Module):
     def __init__(self):
@@ -17,6 +18,7 @@ class Cnn(torch.nn.Module):
         self.fc3 = torch.nn.Linear(84, 10)
 
     def forward(self, x):
+        print(x.size())
         x = self.pool(F.relu(self.conv1(x)))
         x = self.pool(F.relu(self.conv2(x)))
         x = x.view(-1, 16 * 5 * 5)
@@ -39,16 +41,16 @@ class Train():
             running_loss = 0.0
             for i, data in enumerate(trainloader, 0):
                 # get the inputs
-                inputs_l, labels = data
-                inputs = torch.stack(inputs_l)
-                print(inputs.type)
-                break
+                inputs, labels = data
+                #inputs = inputs.numpy()
+                #print((inputs.shape))
+                #print()
+
                 # zero the parameter gradients
                 self.optimizer.zero_grad()
-                print(i)
                 # forward + backward + optimize
-                outputs = self.net(inputs[i].float())
-                loss = self.criterion(outputs, labels[i])
+                outputs = self.net(inputs.float())
+                loss = self.criterion(outputs, labels)
                 loss.backward()
                 self.optimizer.step()
 
@@ -82,13 +84,14 @@ class PreProcessCnn():
             genre = row['genre']
             if (genre == 'electronic'):
                 labels[0] = 1
-
-            tp = np.transpose(row['image'])
+            img = (row['image'])
+            img2 = cv2.resize(img,(32, 32))
+            tp = np.transpose(img2)
             a.append(tp)
-
+        a = np.array(a)
         labels = torch.from_numpy(labels)
         train_data = torch.utils.data.TensorDataset(torch.from_numpy(a), labels)
-        trainloader = torch.utils.data.DataLoader(train_data, batch_size=1)
+        trainloader = torch.utils.data.DataLoader(train_data, batch_size=2)
         trainData = Train(trainloader)
 
 """
