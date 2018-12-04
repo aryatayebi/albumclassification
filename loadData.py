@@ -1,19 +1,12 @@
-import scipy
-from sklearn.utils import shuffle
-import torch
-import torch.nn as nn
-import torch.nn.functional as F
-import torchvision
-import torch.optim as optim
-import torchvision.transforms as transforms
-import os
 from torchData import PreProcessCnn
+import os
 import pandas as pd
 import numpy as np
 import json
 import shutil
 import requests
 import cv2
+import math
 
 _API_ROOT = "http://ws.audioscrobbler.com/2.0/"
 _NUM_ROWS_TRAIN_PER_GENRE = 100
@@ -21,18 +14,16 @@ _NUM_ROWS_TRAIN_PER_GENRE = 100
 class Dataset():
     """Dataset class for album classification"""
 
-    def __init__(self, param_1, param_2):
+    def __init__(self, param_1, debug=False):
         """  Loads data from last.fm API
-
             ARGS:
                 param_1: personal api_key to access last.fm API calls
-
         """
 
         num_rows_train_per_genre = "100"
 
-        if param_2 == True:
-            num_rows_train_per_genre = "100"
+        if debug == True:
+            num_rows_train_per_genre = "50"
 
 
         self.api_key = param_1
@@ -41,9 +32,8 @@ class Dataset():
         album_genre = []
         album_image_url = []
         album_image = []
-        genre_list = ['electronic', 'indie', 'pop']
-            #, 'indie', 'pop', 'metal', 'alternative rock', 'classic rock',
-            #          'jazz', 'folk', 'Hip-Hop', 'Classical']
+        genre_list = ['electronic', 'indie', 'pop', 'metal', 'alternative rock', 'classic rock',
+                      'jazz', 'folk', 'Hip-Hop', 'Classical']
 
         for genre in genre_list:
             response = requests.get(_API_ROOT + "?method=tag.gettopalbums&tag=" + genre +
@@ -62,7 +52,6 @@ class Dataset():
                 print('Error requesting API for ' + genre)
 
         for url in album_image_url:
-            print(url)
             img = requests.get(url, stream=True)
 
             if img.status_code == 200:
@@ -71,101 +60,84 @@ class Dataset():
                     shutil.copyfileobj(img.raw, out_file)
 
                 image = cv2.imread('tempFile.png', 1)
-                print(image.shape)
                 album_image.append(image)
                 os.remove('tempFile.png')
 
             else:
                 print("Error loading image " + url)
 
-
-        self.train = pd.DataFrame(
+        # create data frame with all samples loaded
+        all_data = pd.DataFrame(
             {'name': album_name,
              'genre': album_genre,
              'image_url': album_image_url,
              'image': album_image
              })
 
+        # shuffle the data
+        self.all_data = all_data.sample(frac=1).reset_index(drop=True)
+        # dataLen = self.all_data.shape[0]
+        # length80 = math.floor(dataLen * 0.8)
+        # length10 = math.floor(dataLen * 0.1)
 
-class Net(nn.Module):
-    def __init__(self):
-        super(Net, self).__init__()
-        self.conv1 = torch.nn.Conv2d(3, 6, 5)
-        self.pool = torch.nn.MaxPool2d(2, 2)
-        self.conv2 = torch.nn.Conv2d(6, 16, 5)
-        self.fc1 = torch.nn.Linear(16 * 5 * 5, 120)
-        self.fc2 = torch.nn.Linear(120, 84)
-        self.fc3 = torch.nn.Linear(84, 10)
+        # split data in train/validate/test with 80%/10%/10% of rows from all_data
+        # self.train = self.all_data.iloc[:length80]
+        # self.validate = self.all_data.iloc[length80:(length80 + length10)]
+        # self.test = self.all_data.iloc[(length80 + length10):]
 
-    def forward(self, x):
-        x = self.pool(F.relu(self.conv1(x)))
-        x = self.pool(F.relu(self.conv2(x)))
-        x = x.view(-1, 16 * 5 * 5)
-        x = F.relu(self.fc1(x))
-        x = F.relu(self.fc2(x))
-        x = self.fc3(x)
-        return x
+    def preprocessKNN(self):
+        """Processes data for kNN
+        Returns:
+            Train data, validate data, test data
+        """
+
+        feature_list = []
+
+        for index, row in self.all_data.iterrows():
+            chans = cv2.split(row['image'])
+
+            features = []
+            for chan in chans:
+                hist = cv2.calcHist(chan, [0], None, [64], [0,256])
+                features.extend(hist)
+
+            features = np.array(features).flatten()
+            feature_list.append(features)
+
+        df = self.all_data[['name', 'genre']].copy()
+
+        feature_df = pd.DataFrame(feature_list)
+
+        df = df.join(feature_df)
+
+        # dataLen = df.shape[0]
+        # length80 = math.floor(dataLen * 0.8)
+        # length10 = math.floor(dataLen * 0.1)
+
+        # return df.iloc[:length80], df.iloc[length80:(length80 + length10)], df.iloc[(length80 + length10):]
+
+        return df
+
+
 
 if __name__=='__main__':
 
-    apiKey = "a613f20df66b863fd728baf41ff909d5"
+    apiKey = "18a7c1e4adc3bc81521a35f3f4f3a7bf"
     debug = True
     data = Dataset(apiKey, debug)
-    data = shuffle(data.train)
-    #for index, row in data.train.iterrows():
-    #    print(row['name'] + "  " + row['genre'])
 
-    processing = PreProcessCnn(data)
-    """
+    # sanity check for correct number of rows
+    # assert data.train.shape[0] == 80
+    # assert data.validate.shape[0] == 10
+    # assert data.test.shape[0] == 10
 
-        transform = transforms.Compose([transforms.ToTensor(),transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
-    
-        trainset = torchvision.datasets.CIFAR10(root='./data', train=True,
-                                        download=True, transform=transform)
-    
-        trainloader = torch.utils.data.DataLoader(trainset, batch_size=1,
-                                        num_workers=2)
-    
-        testset = torchvision.datasets.CIFAR10(root='./data', train=False,
-                                       download=True, transform=transform)
-        testloader = torch.utils.data.DataLoader(testset, batch_size=4,
-                                         shuffle=False, num_workers=2)
-    
-        classes = ('plane', 'car', 'bird', 'cat',
-           'deer', 'dog', 'frog', 'horse', 'ship', 'truck')
-    
-    
-        net = Net()
-        criterion = nn.CrossEntropyLoss()
-        optimizer = optim.SGD(net.parameters(), lr=0.001, momentum=0.9)
-    
-        for epoch in range(2):  # loop over the dataset multiple times
-    
-            running_loss = 0.0
-            for i, data in enumerate(trainloader, 0):
-                # get the inputs
-                inputs, labels = data
-                inputs = inputs.numpy()
-                print(type(inputs))
-                print()
-                break
-    
-    
-                # zero the parameter gradients
-                optimizer.zero_grad()
-    
-                # forward + backward + optimize
-                outputs = net(inputs)
-                loss = criterion(outputs, labels)
-                loss.backward()
-                optimizer.step()
-    
-                # print statistics
-                running_loss += loss.item()
-                if i % 2000 == 1999:    # print every 2000 mini-batches
-                    print('[%d, %5d] loss: %.3f' %
-                          (epoch + 1, i + 1, running_loss / 2000))
-                    running_loss = 0.0
-    
-            print('Finished Training')
-    """
+    #knnData = data.preprocessKNN()
+    # assert trainKNN.shape[0] == 80
+    # assert validateKNN.shape[0] == 10
+    # assert testKNN.shape[0] == 10
+
+    cnn = PreProcessCnn(data)
+
+    #print(knnData)
+
+    print("loadData is complete")

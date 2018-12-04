@@ -1,8 +1,8 @@
 import torch
+import torch.utils.data
 import torch.nn.functional as F
 import torch.optim as lfunc
-import torchvision
-import torchvision.transforms as transforms
+from sklearn.utils import shuffle
 import matplotlib.pyplot as plt
 import numpy as np
 import cv2
@@ -42,9 +42,6 @@ class Train():
             for i, data in enumerate(trainloader, 0):
                 # get the inputs
                 inputs, labels = data
-                #inputs = inputs.numpy()
-                #print((inputs.shape))
-                #print()
 
                 # zero the parameter gradients
                 self.optimizer.zero_grad()
@@ -56,9 +53,8 @@ class Train():
 
                 # print statistics
                 running_loss += loss.item()
-                #if i % 2000 == 1999:  # print every 2000 mini-batches
                 print('[%d, %5d] loss: %.3f' %
-                      (epoch + 1, i + 1, running_loss / 2000))
+                      (epoch + 1, i + 1, running_loss / 500))
                 running_loss = 0.0
 
         print('Finished Training')
@@ -88,9 +84,8 @@ class PreProcessCnn():
         plt.show()
 
     def __init__(self, data):
-
-        labels = np.zeros(150, dtype=int)
-        #print(type(data.train.album_image))
+        data = shuffle(data.all_data)
+        labels = np.zeros(500, dtype=int)
         a = []
         i = 0
         for index, row in data.iterrows():
@@ -98,14 +93,34 @@ class PreProcessCnn():
 
             if (genre == 'electronic'):
                 labels[i] = 0
-                #print('electronic')
 
             if (genre == 'indie'):
                 labels[i] = 1
 
             if (genre == 'pop'):
                 labels[i] = 2
-                #print('indie')
+
+            if (genre == 'metal'):
+                labels[i] = 3
+
+            if (genre == 'alternative rock'):
+                labels[i] = 4
+
+            if (genre == 'classic rock'):
+                labels[i] = 5
+
+            if (genre == 'jazz'):
+                labels[i] = 6
+
+            if (genre == 'folk'):
+                labels[i] = 7
+
+            if (genre == 'Hip-Hop'):
+                labels[i] = 8
+
+            if (genre == 'Classical'):
+                labels[i] = 9
+
             img = (row['image'])
             img2 = cv2.resize(img, (32, 32))
             tp = np.transpose(img2)
@@ -119,25 +134,6 @@ class PreProcessCnn():
         a = torch.from_numpy(a)
         labels = torch.from_numpy(labels)
         train_data = torch.utils.data.TensorDataset(a, labels)
-        trainloader = torch.utils.data.DataLoader(train_data, batch_size=140, shuffle=True)
-        testloader = torch.utils.data.DataLoader(train_data, batch_size=10, shuffle=True)
+        trainloader = torch.utils.data.DataLoader(train_data, batch_size=400, shuffle=True)
+        testloader = torch.utils.data.DataLoader(train_data, batch_size=100, shuffle=True)
         trainData = Train(trainloader,testloader)
-
-"""
-    if (genre == 'pop'):
-        labels.append(0)
-    if (genre == 'metal'):
-        labels.append(0)
-    if (genre == 'alternative rock'):
-        labels.append(0)
-    if (genre == 'classic rock'):
-        labels.append(0)
-    if (genre == 'jazz'):
-        labels.append(0)
-    if (genre == 'folk'):
-        labels.append(0)
-    if (genre == 'Hip-Hop'):
-        labels.append(0)
-    if (genre == 'Classical'):
-        labels.append(0)
-"""
