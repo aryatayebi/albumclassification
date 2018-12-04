@@ -6,7 +6,6 @@ import json
 import shutil
 import requests
 import cv2
-import math
 
 _API_ROOT = "http://ws.audioscrobbler.com/2.0/"
 _NUM_ROWS_TRAIN_PER_GENRE = 100
@@ -14,7 +13,7 @@ _NUM_ROWS_TRAIN_PER_GENRE = 100
 class Dataset():
     """Dataset class for album classification"""
 
-    def __init__(self, param_1, debug=False):
+    def __init__(self, param_1, param_2):
         """  Loads data from last.fm API
 
             ARGS:
@@ -24,7 +23,7 @@ class Dataset():
 
         num_rows_train_per_genre = "100"
 
-        if debug == True:
+        if param_2 == True:
             num_rows_train_per_genre = "10"
 
 
@@ -35,7 +34,7 @@ class Dataset():
         album_image_url = []
         album_image = []
         genre_list = ['electronic', 'indie', 'pop', 'metal', 'alternative rock', 'classic rock',
-                      'jazz', 'folk', 'Hip-Hop', 'Classical']
+                      'jazz', 'folk', 'punk', 'Hip-Hop', 'Classical', 'rap']
 
         for genre in genre_list:
             response = requests.get(_API_ROOT + "?method=tag.gettopalbums&tag=" + genre +
@@ -54,6 +53,7 @@ class Dataset():
                 print('Error requesting API for ' + genre)
 
         for url in album_image_url:
+            print(url)
             img = requests.get(url, stream=True)
 
             if img.status_code == 200:
@@ -68,58 +68,14 @@ class Dataset():
             else:
                 print("Error loading image " + url)
 
-        # create data frame with all samples loaded
-        all_data = pd.DataFrame(
+
+        self.train = pd.DataFrame(
             {'name': album_name,
              'genre': album_genre,
              'image_url': album_image_url,
              'image': album_image
              })
 
-        # shuffle the data
-        self.all_data = all_data.sample(frac=1).reset_index(drop=True)
-        # dataLen = self.all_data.shape[0]
-        # length80 = math.floor(dataLen * 0.8)
-        # length10 = math.floor(dataLen * 0.1)
-
-        # split data in train/validate/test with 80%/10%/10% of rows from all_data
-        # self.train = self.all_data.iloc[:length80]
-        # self.validate = self.all_data.iloc[length80:(length80 + length10)]
-        # self.test = self.all_data.iloc[(length80 + length10):]
-
-    def preprocessKNN(self):
-        """Processes data for kNN
-
-        Returns:
-            Train data, validate data, test data
-        """
-
-        feature_list = []
-
-        for index, row in self.all_data.iterrows():
-            chans = cv2.split(row['image'])
-
-            features = []
-            for chan in chans:
-                hist = cv2.calcHist(chan, [0], None, [64], [0,256])
-                features.extend(hist)
-
-            features = np.array(features).flatten()
-            feature_list.append(features)
-
-        df = self.all_data[['name', 'genre']].copy()
-
-        feature_df = pd.DataFrame(feature_list)
-
-        df = df.join(feature_df)
-
-        # dataLen = df.shape[0]
-        # length80 = math.floor(dataLen * 0.8)
-        # length10 = math.floor(dataLen * 0.1)
-
-        # return df.iloc[:length80], df.iloc[length80:(length80 + length10)], df.iloc[(length80 + length10):]
-
-        return df
 
 
 
@@ -129,16 +85,7 @@ if __name__=='__main__':
     debug = True
     data = Dataset(apiKey, debug)
 
-    # sanity check for correct number of rows
-    # assert data.train.shape[0] == 80
-    # assert data.validate.shape[0] == 10
-    # assert data.test.shape[0] == 10
-
-    knnData = data.preprocessKNN()
-    # assert trainKNN.shape[0] == 80
-    # assert validateKNN.shape[0] == 10
-    # assert testKNN.shape[0] == 10
-
-    print(knnData)
+    for index, row in data.train.iterrows():
+        print(row['name'] + "  " + row['genre'])
 
     print("loadData is complete")
