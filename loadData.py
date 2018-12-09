@@ -8,6 +8,7 @@ import cv2
 import math
 import torch
 import torch.utils.data
+from sklearn.utils import shuffle
 import torch.nn.functional as F
 import torch.optim as lfunc
 
@@ -23,7 +24,7 @@ class Dataset():
                 param_1: personal api_key to access last.fm API calls
         """
 
-        num_rows = range(0, 1000, 50)
+        num_rows = range(0, 100, 50)
 
         if debug == True:
             num_rows = range(1)
@@ -80,6 +81,10 @@ class Dataset():
              'image': album_image
              })
 
+        self.all_data = self.all_data.dropna()
+        self.all_data = self.all_data.drop_duplicates('image_url')
+        self.all_data = self.all_data.reset_index()
+
         # shuffle the data
         # self.all_data = all_data.sample(frac=1).reset_index(drop=True)
         # dataLen = self.all_data.shape[0]
@@ -128,6 +133,8 @@ class Dataset():
         labels = np.zeros(self.all_data.shape[0], dtype=int)
         new_images = []
 
+        self.all_data = shuffle(self.all_data)
+
         for index, row in self.all_data.iterrows():
             genre = row['genre']
 
@@ -166,16 +173,31 @@ class Dataset():
             tp = np.transpose(img2)
             new_images.append(tp)
 
+
+        lSize = labels.size
+        trainSize = int(lSize*.8)
+        testSize = int(lSize*.2)
+        print(lSize)
+        print(trainSize)
+        print(testSize)
+        if ((testSize + trainSize) < lSize):
+            trainSize = trainSize + 1
+
+        torch_labels = torch.from_numpy(labels)
+
         new_images = np.array(new_images)
         torch_images = torch.from_numpy(new_images)
-        torch_labels = torch.from_numpy(labels)
-        return torch.utils.data.TensorDataset(torch_images, torch_labels)
+        fullDataset = torch.utils.data.TensorDataset(torch_images, torch_labels)
+        trainDataset, testDataset = torch.utils.data.random_split(fullDataset, [trainSize, testSize])
+
+
+        return trainDataset, testDataset
 
 
 
 if __name__=='__main__':
 
-    apiKey = "BQC_ZHdMrIVsP8URqeqzWqdoQ5EBaTmDzI5XIqpPNIq3nxKhq_HE1mzcjaY6fv00vLC8W8C-35MrgjWx4aBzgwK2bRGcxL-6sHF7u3W9p7oC3nm9X4aeofuJEViQi3sMl3z3tFreaDaXSehXtMw"
+    apiKey = "BQBUxLfpW8x20cSs9WSxlOg-D00wTAOkop0pvvETG6XLdsjS1_mFlbOUoUYG6mgFEb3_IGT95e62qNko4kYx73qvXg2jy1fQHtO-Ey7rrF4MTuCnZ_ld0AFs0lY89mxlH5BT7MqFAZBXw1A"
     debug = True
     data = Dataset(apiKey, debug)
 

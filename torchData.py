@@ -29,9 +29,10 @@ class Cnn(torch.nn.Module):
 
 
 class Train():
-    def __init__(self, train_data):
-        trainloader = torch.utils.data.DataLoader(train_data, batch_size=9000, shuffle=True)
-        testloader = torch.utils.data.DataLoader(train_data, batch_size=1000, shuffle=True)
+    def __init__(self, train_data, test_data):
+
+        trainloader = torch.utils.data.DataLoader(train_data, shuffle=True)
+        testloader = torch.utils.data.DataLoader(test_data, shuffle=True)
 
         self.net = Cnn()
         self.criterion = torch.nn.CrossEntropyLoss()
@@ -58,7 +59,7 @@ class Train():
                 # print statistics
                 running_loss += loss.item()
                 print('[%d, %5d] loss: %.3f' %
-                      (epoch + 1, i + 1, running_loss / 500))
+                      (epoch + 1, i + 1, running_loss / 50))
                 running_loss = 0.0
 
         print('Finished Training')
@@ -80,14 +81,14 @@ class Train():
 
 def main():
     print('Loading dataset...')
-    apiKey = "BQAUbXFNqNPBGyoUGem5iiHY0xm6FmoUWmrHH2_5sKDi-aAaxuZWY51JTkJJ6eVBGdKdfNaefyMIQslhEg8aTkRzZwLmf7OvpXXMNasqUV-hwxrytRxgHSBvu2SE8-S6qurBseEYkZaK-Is"
+    apiKey = "BQDFkNU70Qr8wmoyZ9Upq3T8SSIsKkjptBtm4H5AaGn9PXhprKYEpg9WseMFEEGbR0XOOk88xa-7uWL_qnXT4MkC9JJ3-b3kNx982HY9XVtnmMuvOAjTDg-31hcFAMNpnDbuBd9kvQ21mz0"
     debug = True
     data = loadData.Dataset(apiKey, debug)
 
     print("Preprocessing...")
-    cnnData = data.preprocessCNN()
+    cnnTrainData, cnnTestData = data.preprocessCNN()
 
-    Train(cnnData)
+    Train(cnnTrainData, cnnTestData)
 
 
 if __name__ == '__main__':
