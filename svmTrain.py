@@ -14,8 +14,8 @@ def calcScore(c, gamma, X, y):
 
 def main():
     print('Loading dataset...')
-    apiKey = "18a7c1e4adc3bc81521a35f3f4f3a7bf"
-    data = loadData.Dataset(apiKey)
+    apiKey = "BQD0VrfBRMvOJgNXkW4PkoGTr4Deb4j8XDzTLW74Sf1WhEh0U95DEzprX5Iyw5-1gcHdcuX80Y4Xf-IHHov0R8xsN4tCHofK5Ua6tH1J9ueFvgB_V_FAqHYe60KeZ4P8E0aGO9aUxQCFVMn4ol0"
+    data = loadData.Dataset(apiKey, debug=True)
 
     print("Preprocessing...")
     allData = data.preprocessKNN()

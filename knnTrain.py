@@ -9,14 +9,14 @@ from matplotlib import pyplot as plt
 
 def calcScore(neighbors, weight, X, y):
     model = KNeighborsClassifier(n_neighbors=neighbors, weights=weight)
-    scores = cross_val_score(model, X, y, cv=50, scoring='accuracy')
+    scores = cross_val_score(model, X, y, cv=10, scoring='accuracy')
 
     return scores.mean()
 
 def main():
     print('Loading dataset...')
-    apiKey = "18a7c1e4adc3bc81521a35f3f4f3a7bf"
-    data = loadData.Dataset(apiKey)
+    apiKey = "BQCs9W_Fy8Dw1qlrYCuwRnt_E-ZPMvN7v6MNyVN8JHjgEFZURCmNmo93hH4mE2KgupSq5qYaq2r0YDIVpd4_WHX6fbLF7fBJc3YVKmYzlo-YgFNq6D3Y7A5CFVjF2MpngvHVTNNfT-AdfotKi0M"
+    data = loadData.Dataset(apiKey, debug=False)
 
     print("Preprocessing...")
     knnData = data.preprocessKNN()
@@ -52,7 +52,7 @@ def main():
     plt.show()
 
     plt.plot(steps, cv_scroes2)
-    plt.title('KNN Model (Using Distance Weights')
+    plt.title('KNN Model (Using Distance Weights)')
     plt.xlabel('Number of Neighbors (K)')
     plt.ylabel('Model Accuracy')
     plt.show()

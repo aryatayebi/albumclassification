@@ -23,7 +23,7 @@ class Dataset():
                 param_1: personal api_key to access last.fm API calls
         """
 
-        num_rows = range(0, 1000, 50)
+        num_rows = range(0, 100, 50)
 
         if debug == True:
             num_rows = range(1)
@@ -80,6 +80,12 @@ class Dataset():
              'image': album_image
              })
 
+        # drop null rows
+        self.all_data = self.all_data.dropna()
+        # drop duplicate rows
+        self.all_data = self.all_data.drop_duplicates('image_url')
+        self.all_data = self.all_data.reset_index()
+
         # shuffle the data
         # self.all_data = all_data.sample(frac=1).reset_index(drop=True)
         # dataLen = self.all_data.shape[0]
@@ -115,12 +121,6 @@ class Dataset():
         feature_df = pd.DataFrame(feature_list)
 
         df = df.join(feature_df)
-
-        # dataLen = df.shape[0]
-        # length80 = math.floor(dataLen * 0.8)
-        # length10 = math.floor(dataLen * 0.1)
-
-        # return df.iloc[:length80], df.iloc[length80:(length80 + length10)], df.iloc[(length80 + length10):]
 
         return df
 
@@ -175,10 +175,10 @@ class Dataset():
 
 if __name__=='__main__':
 
-    apiKey = "BQC_ZHdMrIVsP8URqeqzWqdoQ5EBaTmDzI5XIqpPNIq3nxKhq_HE1mzcjaY6fv00vLC8W8C-35MrgjWx4aBzgwK2bRGcxL-6sHF7u3W9p7oC3nm9X4aeofuJEViQi3sMl3z3tFreaDaXSehXtMw"
+    apiKey = "BQCs9W_Fy8Dw1qlrYCuwRnt_E-ZPMvN7v6MNyVN8JHjgEFZURCmNmo93hH4mE2KgupSq5qYaq2r0YDIVpd4_WHX6fbLF7fBJc3YVKmYzlo-YgFNq6D3Y7A5CFVjF2MpngvHVTNNfT-AdfotKi0M"
     debug = True
     data = Dataset(apiKey, debug)
 
-    print(data.all_data)
+    datf = data.preprocessKNN()
 
     print("loadData is complete")
