@@ -23,10 +23,10 @@ class Dataset():
                 param_1: personal api_key to access last.fm API calls
         """
 
-        num_rows_train_per_genre = "50"
+        num_rows = range(0, 1000, 50)
 
         if debug == True:
-            num_rows_train_per_genre = "10"
+            num_rows = range(1)
 
 
         self.api_key = param_1
@@ -39,7 +39,7 @@ class Dataset():
                       'jazz', 'folk', 'rap', 'classical']
 
         for genre in genre_list:
-            for i in range(0, 1000, 50):
+            for i in num_rows:
                 response = requests.get(_API_ROOT + "?q=genre%3A" + genre + "&type=track&limit=50&offset=" + str(i), headers = {"Authorization": "Bearer " + self.api_key})
                 data01 = response.json()
                 print(i)
@@ -53,8 +53,10 @@ class Dataset():
 
                 else:
                     print('Error requesting API for ' + genre)
+                    exit(1)
 
-        for url in album_image_url:
+        for index, url in enumerate(album_image_url):
+            print("Getting URL " + str(index))
             img = requests.get(url, stream=True)
 
             if img.status_code == 200:
@@ -68,9 +70,10 @@ class Dataset():
 
             else:
                 print("Error loading image " + url)
+                exit(1)
 
         # create data frame with all samples loaded
-        all_data = pd.DataFrame(
+        self.all_data = pd.DataFrame(
             {'name': album_name,
              'genre': album_genre,
              'image_url': album_image_url,
@@ -78,7 +81,7 @@ class Dataset():
              })
 
         # shuffle the data
-        self.all_data = all_data.sample(frac=1).reset_index(drop=True)
+        # self.all_data = all_data.sample(frac=1).reset_index(drop=True)
         # dataLen = self.all_data.shape[0]
         # length80 = math.floor(dataLen * 0.8)
         # length10 = math.floor(dataLen * 0.1)
@@ -172,20 +175,10 @@ class Dataset():
 
 if __name__=='__main__':
 
-    apiKey = "BQDRq_Htx58KYyXZ5qstoX9HQyNMpyC_5XcWiFL1Il3O9WciZeWURYzfhxF0NDTXGvgu7FcEHZOg9hLXZHAuVsxy9p0S5rmtNxk5NsdWBUGxxZP1jAFwjh4bBGSNowPHUSA8e8Kdhqkdq2PsTaM"
+    apiKey = "BQC_ZHdMrIVsP8URqeqzWqdoQ5EBaTmDzI5XIqpPNIq3nxKhq_HE1mzcjaY6fv00vLC8W8C-35MrgjWx4aBzgwK2bRGcxL-6sHF7u3W9p7oC3nm9X4aeofuJEViQi3sMl3z3tFreaDaXSehXtMw"
     debug = True
     data = Dataset(apiKey, debug)
 
-    # sanity check for correct number of rows
-    # assert data.train.shape[0] == 80
-    # assert data.validate.shape[0] == 10
-    # assert data.test.shape[0] == 10
-
-    knnData = data.preprocessKNN()
-    # assert trainKNN.shape[0] == 80
-    # assert validateKNN.shape[0] == 10
-    # assert testKNN.shape[0] == 10
-
-    print(knnData)
+    print(data.all_data)
 
     print("loadData is complete")
