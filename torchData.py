@@ -6,6 +6,7 @@ from sklearn.utils import shuffle
 import matplotlib.pyplot as plt
 import numpy as np
 import cv2
+import loadData
 
 class Cnn(torch.nn.Module):
     def __init__(self):
@@ -28,7 +29,10 @@ class Cnn(torch.nn.Module):
 
 
 class Train():
-    def __init__(self, trainloader,testloader):
+    def __init__(self, train_data):
+        trainloader = torch.utils.data.DataLoader(train_data, batch_size=400, shuffle=True)
+        testloader = torch.utils.data.DataLoader(train_data, batch_size=100, shuffle=True)
+
         self.net = Cnn()
         self.criterion = torch.nn.CrossEntropyLoss()
         self.optimizer = lfunc.SGD(self.net.parameters(), lr=0.001, momentum=0.9)
@@ -74,66 +78,16 @@ class Train():
                 100 * correct / total))
 
 
+def main():
+    print('Loading dataset...')
+    apiKey = "18a7c1e4adc3bc81521a35f3f4f3a7bf"
+    data = loadData.dataSet(apiKey)
 
-class PreProcessCnn():
+    print("Preprocessing...")
+    cnnData = data.preprocessCNN()
 
-    def imshow(self, img):
-        img = img
-        npimg = img.numpy()
-        plt.imshow(npimg)
-        plt.show()
-
-    def __init__(self, data):
-        data = shuffle(data.all_data)
-        labels = np.zeros(500, dtype=int)
-        a = []
-        i = 0
-        for index, row in data.iterrows():
-            genre = row['genre']
-
-            if (genre == 'electronic'):
-                labels[i] = 0
-
-            if (genre == 'indie'):
-                labels[i] = 1
-
-            if (genre == 'pop'):
-                labels[i] = 2
-
-            if (genre == 'metal'):
-                labels[i] = 3
-
-            if (genre == 'alternative rock'):
-                labels[i] = 4
-
-            if (genre == 'classic rock'):
-                labels[i] = 5
-
-            if (genre == 'jazz'):
-                labels[i] = 6
-
-            if (genre == 'folk'):
-                labels[i] = 7
-
-            if (genre == 'Hip-Hop'):
-                labels[i] = 8
-
-            if (genre == 'Classical'):
-                labels[i] = 9
-
-            img = (row['image'])
-            img2 = cv2.resize(img, (32, 32))
-            tp = np.transpose(img2)
-            a.append(tp)
+    Train(cnnData)
 
 
-
-            i = i + 1
-
-        a = np.array(a)
-        a = torch.from_numpy(a)
-        labels = torch.from_numpy(labels)
-        train_data = torch.utils.data.TensorDataset(a, labels)
-        trainloader = torch.utils.data.DataLoader(train_data, batch_size=400, shuffle=True)
-        testloader = torch.utils.data.DataLoader(train_data, batch_size=100, shuffle=True)
-        trainData = Train(trainloader,testloader)
+if __name__ == '__main__':
+    main()

@@ -6,6 +6,7 @@ import numpy as np
 from matplotlib import pyplot as plt
 
 
+
 def calcScore(neighbors, weight, X, y):
     model = KNeighborsClassifier(n_neighbors=neighbors, weights=weight)
     scores = cross_val_score(model, X, y, cv=50, scoring='accuracy')

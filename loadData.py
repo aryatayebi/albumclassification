@@ -6,6 +6,10 @@ import shutil
 import requests
 import cv2
 import math
+import torch
+import torch.utils.data
+import torch.nn.functional as F
+import torch.optim as lfunc
 
 _API_ROOT = "http://ws.audioscrobbler.com/2.0/"
 _NUM_ROWS_TRAIN_PER_GENRE = 100
@@ -116,6 +120,53 @@ class Dataset():
         # return df.iloc[:length80], df.iloc[length80:(length80 + length10)], df.iloc[(length80 + length10):]
 
         return df
+
+    def preprocessCNN(self):
+        labels = np.zeros(self.all_data.shape[0], dtype=int)
+        new_images = []
+
+        for index, row in self.all_data.iterrows():
+            genre = row['genre']
+
+            if (genre == 'electronic'):
+                labels[index] = 0
+
+            if (genre == 'indie'):
+                labels[index] = 1
+
+            if (genre == 'pop'):
+                labels[index] = 2
+
+            if (genre == 'metal'):
+                labels[index] = 3
+
+            if (genre == 'alternative rock'):
+                labels[index] = 4
+
+            if (genre == 'classic rock'):
+                labels[index] = 5
+
+            if (genre == 'jazz'):
+                labels[index] = 6
+
+            if (genre == 'folk'):
+                labels[index] = 7
+
+            if (genre == 'Hip-Hop'):
+                labels[index] = 8
+
+            if (genre == 'Classical'):
+                labels[index] = 9
+
+            img = (row['image'])
+            img2 = cv2.resize(img, (32, 32))
+            tp = np.transpose(img2)
+            new_images.append(tp)
+
+        new_images = np.array(new_images)
+        torch_images = torch.from_numpy(new_images)
+        torch_labels = torch.from_numpy(labels)
+        return torch.utils.data.TensorDataset(torch_images, torch_labels)
 
 
 
