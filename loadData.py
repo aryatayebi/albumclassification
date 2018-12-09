@@ -42,12 +42,14 @@ class Dataset():
             for i in range(0, 1000, 50):
                 response = requests.get(_API_ROOT + "?q=genre%3A" + genre + "&type=track&limit=50&offset=" + str(i), headers = {"Authorization": "Bearer " + self.api_key})
                 data01 = response.json()
+                print(i)
 
                 if response.status_code == 200:
                     for item in data01['tracks']['items']:
-                        album_name.append(item['album']['name'])
-                        album_genre.append(genre)
-                        album_image_url.append(item['album']['images'][2]['url'])
+                        if len(item['album']['images']) > 2:
+                            album_name.append(item['album']['name'])
+                            album_genre.append(genre)
+                            album_image_url.append(item['album']['images'][2]['url'])
 
                 else:
                     print('Error requesting API for ' + genre)
@@ -170,7 +172,7 @@ class Dataset():
 
 if __name__=='__main__':
 
-    apiKey = "BQASE_Me8oAwsbf5G8_ug440Shc0nJEYF76fRQ4K621gHFWaGQ9iUSlUNquDZQTIRFVEVGT5skd9UVjD8qTjupObI1Qc4uYJKSin0WGVAIIp5O6jBMJwuluHfgU0ZCBiAULppedUhQJeWfQQ2IA"
+    apiKey = "BQDRq_Htx58KYyXZ5qstoX9HQyNMpyC_5XcWiFL1Il3O9WciZeWURYzfhxF0NDTXGvgu7FcEHZOg9hLXZHAuVsxy9p0S5rmtNxk5NsdWBUGxxZP1jAFwjh4bBGSNowPHUSA8e8Kdhqkdq2PsTaM"
     debug = True
     data = Dataset(apiKey, debug)
 
