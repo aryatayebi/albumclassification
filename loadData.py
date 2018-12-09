@@ -6,12 +6,12 @@ import shutil
 import requests
 import cv2
 import math
-import torch
-import torch.utils.data
-import torch.nn.functional as F
-import torch.optim as lfunc
+# import torch
+# import torch.utils.data
+# import torch.nn.functional as F
+# import torch.optim as lfunc
 
-_API_ROOT = "http://ws.audioscrobbler.com/2.0/"
+_API_ROOT = "https://api.spotify.com/v1/search"
 _NUM_ROWS_TRAIN_PER_GENRE = 100
 
 class Dataset():
@@ -35,24 +35,22 @@ class Dataset():
         album_genre = []
         album_image_url = []
         album_image = []
-        genre_list = ['electronic', 'indie', 'pop', 'metal', 'alternative rock', 'classic rock',
-                      'jazz', 'folk', 'Hip-Hop', 'Classical']
+        genre_list = ['electronic', 'indie', 'pop', 'metal', 'alternative%20rock', 'classic%20rock',
+                      'jazz', 'folk', 'rap', 'classical']
 
         for genre in genre_list:
-            response = requests.get(_API_ROOT + "?method=tag.gettopalbums&tag=" + genre +
-                                    "&limit=" + num_rows_train_per_genre + ",&api_key="+ self.api_key + "&format=json")
-            data01 = response.json()
+            for i in range(0, 1000, 50):
+                response = requests.get(_API_ROOT + "?q=genre%3A" + genre + "&type=track&limit=50&offset=" + str(i), headers = {"Authorization": "Bearer " + self.api_key})
+                data01 = response.json()
 
-            if response.status_code == 200:
-                for album in data01['albums']['album']:
-                    if 'name' in album and 'image' in album and not album['name'] == "" and not album['image'][3]['#text'] == "":
-                        album_name.append(album['name'])
+                if response.status_code == 200:
+                    for item in data01['tracks']['items']:
+                        album_name.append(item['album']['name'])
                         album_genre.append(genre)
-                        album_image_url.append(album['image'][3]['#text'])
-                        # print(album['name'])
-                        # print(album['image'][3]['#text'])
-            else:
-                print('Error requesting API for ' + genre)
+                        album_image_url.append(item['album']['images'][2]['url'])
+
+                else:
+                    print('Error requesting API for ' + genre)
 
         for url in album_image_url:
             img = requests.get(url, stream=True)
@@ -121,58 +119,58 @@ class Dataset():
 
         return df
 
-    def preprocessCNN(self):
-        labels = np.zeros(self.all_data.shape[0], dtype=int)
-        new_images = []
-
-        for index, row in self.all_data.iterrows():
-            genre = row['genre']
-
-            if (genre == 'electronic'):
-                labels[index] = 0
-
-            if (genre == 'indie'):
-                labels[index] = 1
-
-            if (genre == 'pop'):
-                labels[index] = 2
-
-            if (genre == 'metal'):
-                labels[index] = 3
-
-            if (genre == 'alternative rock'):
-                labels[index] = 4
-
-            if (genre == 'classic rock'):
-                labels[index] = 5
-
-            if (genre == 'jazz'):
-                labels[index] = 6
-
-            if (genre == 'folk'):
-                labels[index] = 7
-
-            if (genre == 'Hip-Hop'):
-                labels[index] = 8
-
-            if (genre == 'Classical'):
-                labels[index] = 9
-
-            img = (row['image'])
-            img2 = cv2.resize(img, (32, 32))
-            tp = np.transpose(img2)
-            new_images.append(tp)
-
-        new_images = np.array(new_images)
-        torch_images = torch.from_numpy(new_images)
-        torch_labels = torch.from_numpy(labels)
-        return torch.utils.data.TensorDataset(torch_images, torch_labels)
+    # def preprocessCNN(self):
+    #     labels = np.zeros(self.all_data.shape[0], dtype=int)
+    #     new_images = []
+    #
+    #     for index, row in self.all_data.iterrows():
+    #         genre = row['genre']
+    #
+    #         if (genre == 'electronic'):
+    #             labels[index] = 0
+    #
+    #         if (genre == 'indie'):
+    #             labels[index] = 1
+    #
+    #         if (genre == 'pop'):
+    #             labels[index] = 2
+    #
+    #         if (genre == 'metal'):
+    #             labels[index] = 3
+    #
+    #         if (genre == 'alternative rock'):
+    #             labels[index] = 4
+    #
+    #         if (genre == 'classic rock'):
+    #             labels[index] = 5
+    #
+    #         if (genre == 'jazz'):
+    #             labels[index] = 6
+    #
+    #         if (genre == 'folk'):
+    #             labels[index] = 7
+    #
+    #         if (genre == 'Hip-Hop'):
+    #             labels[index] = 8
+    #
+    #         if (genre == 'Classical'):
+    #             labels[index] = 9
+    #
+    #         img = (row['image'])
+    #         img2 = cv2.resize(img, (32, 32))
+    #         tp = np.transpose(img2)
+    #         new_images.append(tp)
+    #
+    #     new_images = np.array(new_images)
+    #     torch_images = torch.from_numpy(new_images)
+    #     torch_labels = torch.from_numpy(labels)
+    #     return torch.utils.data.TensorDataset(torch_images, torch_labels)
 
 
 
 if __name__=='__main__':
 
-    apiKey = "18a7c1e4adc3bc81521a35f3f4f3a7bf"
+    apiKey = "BQASE_Me8oAwsbf5G8_ug440Shc0nJEYF76fRQ4K621gHFWaGQ9iUSlUNquDZQTIRFVEVGT5skd9UVjD8qTjupObI1Qc4uYJKSin0WGVAIIp5O6jBMJwuluHfgU0ZCBiAULppedUhQJeWfQQ2IA"
     debug = True
     data = Dataset(apiKey, debug)
 
