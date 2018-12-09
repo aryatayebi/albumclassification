@@ -1,4 +1,3 @@
-from torchData import PreProcessCnn
 import os
 import pandas as pd
 import numpy as np
@@ -20,10 +19,10 @@ class Dataset():
                 param_1: personal api_key to access last.fm API calls
         """
 
-        num_rows_train_per_genre = "100"
+        num_rows_train_per_genre = "50"
 
         if debug == True:
-            num_rows_train_per_genre = "50"
+            num_rows_train_per_genre = "10"
 
 
         self.api_key = param_1
@@ -131,13 +130,11 @@ if __name__=='__main__':
     # assert data.validate.shape[0] == 10
     # assert data.test.shape[0] == 10
 
-    #knnData = data.preprocessKNN()
+    knnData = data.preprocessKNN()
     # assert trainKNN.shape[0] == 80
     # assert validateKNN.shape[0] == 10
     # assert testKNN.shape[0] == 10
 
-    cnn = PreProcessCnn(data)
-
-    #print(knnData)
+    print(knnData)
 
     print("loadData is complete")
