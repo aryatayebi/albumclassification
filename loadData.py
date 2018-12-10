@@ -23,7 +23,7 @@ class Dataset():
                 param_1: personal api_key to access last.fm API calls
         """
 
-        num_rows = range(0, 100, 50)
+        num_rows = range(0, 1000, 50)
 
         if debug == True:
             num_rows = range(1)
