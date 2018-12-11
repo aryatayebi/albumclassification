@@ -24,7 +24,7 @@ class Dataset():
                 param_1: personal api_key to access last.fm API calls
         """
 
-        num_rows = range(0, 100, 50)
+        num_rows = range(0, 1000, 50)
 
         if debug == True:
             num_rows = range(1)
@@ -150,10 +150,10 @@ class Dataset():
             if (genre == 'metal'):
                 labels[index] = 3
 
-            if (genre == 'alternative rock'):
+            if (genre == 'alternative%20rock'):
                 labels[index] = 4
 
-            if (genre == 'classic rock'):
+            if (genre == 'classic%20rock'):
                 labels[index] = 5
 
             if (genre == 'jazz'):
@@ -162,14 +162,14 @@ class Dataset():
             if (genre == 'folk'):
                 labels[index] = 7
 
-            if (genre == 'Hip-Hop'):
+            if (genre == 'rap'):
                 labels[index] = 8
 
-            if (genre == 'Classical'):
+            if (genre == 'classical'):
                 labels[index] = 9
 
             img = (row['image'])
-            img2 = cv2.resize(img, (32, 32))
+            img2 = cv2.resize(img, (64, 64))
             tp = np.transpose(img2)
             new_images.append(tp)
 
@@ -177,9 +177,6 @@ class Dataset():
         lSize = labels.size
         trainSize = int(lSize*.8)
         testSize = int(lSize*.2)
-        print(lSize)
-        print(trainSize)
-        print(testSize)
         if ((testSize + trainSize) < lSize):
             trainSize = trainSize + 1
 
