@@ -9,14 +9,14 @@ from matplotlib import pyplot as plt
 
 def calcScore(neighbors, weight, X, y):
     model = KNeighborsClassifier(n_neighbors=neighbors, weights=weight)
-    scores = cross_val_score(model, X, y, cv=50, scoring='accuracy')
+    scores = cross_val_score(model, X, y, cv=10, scoring='accuracy')
 
     return scores.mean()
 
 def main():
     print('Loading dataset...')
-    apiKey = "18a7c1e4adc3bc81521a35f3f4f3a7bf"
-    data = loadData.Dataset(apiKey)
+    apiKey = ""
+    data = loadData.Dataset(apiKey, debug=False)
 
     print("Preprocessing...")
     knnData = data.preprocessKNN()
@@ -43,25 +43,26 @@ def main():
         score = calcScore(s, 'distance', X, y)
         cv_scroes2.append(score)
         print(
-            "K = %g, accuracy = %g" % (s, calcScore(s, 'distance', X, y)))
+            "K = %g, accuracy = %g" % (s, score))
 
     plt.plot(steps, cv_scores1)
-    plt.title('KNN Model (Using Uniform Weights)')
-    plt.xlabel('Number of Neighbors (K)')
-    plt.ylabel('Model Accuracy')
-    plt.show()
-
     plt.plot(steps, cv_scroes2)
-    plt.title('KNN Model (Using Distance Weights')
+    plt.title('KNN Model')
     plt.xlabel('Number of Neighbors (K)')
     plt.ylabel('Model Accuracy')
+    plt.legend(['Uniform Weight', 'Distance Weight'], loc='lower right')
     plt.show()
 
     cv_scores = []
+    cv_weighted_scores = []
     for d in range(1, 20):
-        cv_scores.append(calcScore(25, 'uniform', X, y))
+        cv_scores.append(calcScore(20, 'uniform', X, y))
 
-    print(np.mean(cv_scores))
+    for d in range(1, 20):
+        cv_weighted_scores.append(calcScore(20, 'distance', X, y))
+
+    print( "Mean accuracy of 20 cv models using k = 20 neighbors is %g" % (np.mean(cv_scores)))
+    print( "Mean accuracy of 20 cv models using k = 20 neighbors with distance weight is %g" % (np.mean(cv_weighted_scores)))
 
 
 if __name__ == '__main__':
