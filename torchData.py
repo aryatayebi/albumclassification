@@ -19,21 +19,22 @@ class Cnn(torch.nn.Module):
         self.fc3 = torch.nn.Linear(500, 120)
         self.fc4 = torch.nn.Linear(120, 84)
         self.fc5 = torch.nn.Linear(84, 10)
-        #self.conv2 = torch.nn.Conv2d(6, 16, 5)
-        #self.fc1 = torch.nn.Linear(16 * 5 * 5, 120)
-        #self.fc2 = torch.nn.Linear(120, 84)
-        #self.fc3 = torch.nn.Linear(84, 10)
 
     def forward(self, x):
-        #x = self.pool(F.relu(self.conv1(x)))
-        #x = self.pool(F.relu(self.conv2(x)))
+        # First relu and convolutional transformation and maxPool
         x = self.pool(F.relu(self.conv1(x)))
+        # Second relu and convolutional transformation and maxPool
         x = self.pool(F.relu(self.conv2(x)))
         x = x.view(-1, 16 * 13 * 13)
+        # Third relu with first linear transformation
         x = F.relu(self.fc1(x))
+        # Fourth relu with Second linear transformation
         x = F.relu(self.fc2(x))
+        # Fifth relu with Third linear transformation
         x = F.relu(self.fc3(x))
+        # Fourth linear transformation
         x = self.fc4(x)
+        # Fifth linear transformation
         x = self.fc5(x)
         return x
 
@@ -46,7 +47,7 @@ class Train():
 
         self.net = Cnn()
         self.criterion = torch.nn.CrossEntropyLoss()
-        self.optimizer = lfunc.SGD(self.net.parameters(), lr=0.001, momentum=0.9)
+        self.optimizer = lfunc.SGD(self.net.parameters(), lr=0.01, momentum=0.9)
         self.training(trainloader)
         self.test(testloader)
 
@@ -59,29 +60,31 @@ class Train():
             running_loss = 0.0
             for i, data in enumerate(trainloader, 0):
                 # get the inputs
-                inputs, labels = data
+                inputs, genres = data
 
                 # zero the parameter gradients
                 self.optimizer.zero_grad()
-                # forward + backward + optimize
-                outputs = self.net(inputs.float())
-                loss = self.criterion(outputs, labels)
+                # forward + backward + optimizing
+                predicted_genres = self.net(inputs.float())
+                loss = self.criterion(predicted_genres, genres)
                 loss.backward()
                 self.optimizer.step()
 
                 # print statistics
                 running_loss += loss.item()
-                if i % 500 == 499:
+                if i % 1000 == 999:
                     print('[%d, %5d] loss: %.3f' %
                           (epoch + 1, i + 1, running_loss / 500))
                     lossList.append(running_loss / 500)
                     running_loss = 0.0
         x = 0
+
+        # plotting
         for i in lossList:
             plt.scatter(x, i)
             x = x + 1
         plt.title('')
-        plt.xlabel('Iterations (Per 500)')
+        plt.xlabel('Iterations (Per 1000)')
         plt.ylabel('RunningLoss')
         plt.show()
         print('Finished Training')
@@ -91,11 +94,11 @@ class Train():
         total = 0
         with torch.no_grad():
             for data in testloader:
-                images, labels = data
+                images, genres = data
                 outputs = self.net(images.float())
                 _, predicted = torch.max(outputs.data, 1)
-                total += labels.size(0)
-                correct += (predicted == labels).sum().item()
+                total += genres.size(0)
+                correct += (predicted == genres).sum().item()
 
         print('Accuracy of the network on the test images: %d %%' % (
                 100 * correct / total))
@@ -107,15 +110,15 @@ class Train():
 
         with torch.no_grad():
             for data in testloader:
-                images, labels = data
+                images, genres = data
                 outputs = self.net(images.float())
                 _, predicted = torch.max(outputs, 1)
-                c = (predicted == labels).squeeze()
-                labels = labels.numpy()
-                for i in range(labels.size):
-                    label = labels[i]
-                    genre_correct[label] += c[i].item()
-                    genre_total[label] += 1
+                c = (predicted == genres).squeeze()
+                genres = genres.numpy()
+                for i in range(genres.size):
+                    genre = genres[i]
+                    genre_correct[genre] += c[i].item()
+                    genre_total[genre] += 1
 
         for i in range(10):
             print('Accuracy of %5s : %2d %%' % (
@@ -124,7 +127,7 @@ class Train():
 
 def main():
     print('Loading dataset...')
-    apiKey = "BQBk1SQdk1gu_TIU4beOYRKLKdaPiyjUOckQUmv2RJFuUkgjH8yCR_xyHFQYeLWfRVVlkFOhNd_6Jv7a-oK3qSTOuRZXy4SJ_YmyWTq0nswJdDJEeko1naRIpBhqop2rdU7vYPolzLL9O5U"
+    apiKey = "BQBNpsweXBRxRQ_3YbpMnizfq76zf2Jt00HHpfQLFw-yU4-AMAy_HNxbF6UhKvX1wv5jqewbI_ppoE6ZRsd9sOun66TfzGlQgMhckMxV2Bwn7wlJQoNJZ9hdjR4QfoxjlhwJAwMe7PXcwtI"
     debug = False
     data = loadData.Dataset(apiKey, debug)
 

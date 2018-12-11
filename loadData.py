@@ -9,8 +9,6 @@ import math
 import torch
 import torch.utils.data
 from sklearn.utils import shuffle
-import torch.nn.functional as F
-import torch.optim as lfunc
 
 _API_ROOT = "https://api.spotify.com/v1/search"
 _NUM_ROWS_TRAIN_PER_GENRE = 100
@@ -135,6 +133,7 @@ class Dataset():
 
         self.all_data = shuffle(self.all_data)
 
+        # Grab genres and put into an nparray
         for index, row in self.all_data.iterrows():
             genre = row['genre']
 
@@ -175,16 +174,21 @@ class Dataset():
 
 
         lSize = labels.size
+
+        # Split Training and Testing into Train and Test Sizes
         trainSize = int(lSize*.8)
         testSize = int(lSize*.2)
         if ((testSize + trainSize) < lSize):
             trainSize = trainSize + 1
 
-        torch_labels = torch.from_numpy(labels)
 
+        # Numpy To Pytorch Tensor Transformation
+        torch_labels = torch.from_numpy(labels)
         new_images = np.array(new_images)
         torch_images = torch.from_numpy(new_images)
         fullDataset = torch.utils.data.TensorDataset(torch_images, torch_labels)
+
+        # Splitting Dataset
         trainDataset, testDataset = torch.utils.data.random_split(fullDataset, [trainSize, testSize])
 
 
@@ -195,7 +199,7 @@ class Dataset():
 if __name__=='__main__':
 
     apiKey = "BQBUxLfpW8x20cSs9WSxlOg-D00wTAOkop0pvvETG6XLdsjS1_mFlbOUoUYG6mgFEb3_IGT95e62qNko4kYx73qvXg2jy1fQHtO-Ey7rrF4MTuCnZ_ld0AFs0lY89mxlH5BT7MqFAZBXw1A"
-    debug = True
+    debug = False
     data = Dataset(apiKey, debug)
 
     print(data.all_data)
