@@ -2,10 +2,7 @@ import torch
 import torch.utils.data
 import torch.nn.functional as F
 import torch.optim as lfunc
-from sklearn.utils import shuffle
 import matplotlib.pyplot as plt
-import numpy as np
-import cv2
 import loadData
 
 class Cnn(torch.nn.Module):
