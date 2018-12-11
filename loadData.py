@@ -6,10 +6,10 @@ import shutil
 import requests
 import cv2
 import math
-# import torch
-# import torch.utils.data
-# import torch.nn.functional as F
-# import torch.optim as lfunc
+import torch
+import torch.utils.data
+import torch.nn.functional as F
+import torch.optim as lfunc
 
 _API_ROOT = "https://api.spotify.com/v1/search"
 _NUM_ROWS_TRAIN_PER_GENRE = 100
