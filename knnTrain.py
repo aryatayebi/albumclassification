@@ -15,7 +15,7 @@ def calcScore(neighbors, weight, X, y):
 
 def main():
     print('Loading dataset...')
-    apiKey = "BQDQ4ntj9l8ahaieVUH8IohMDEZwbIhhWmGrWkFAxU3Dqye6oDOYWISxPXnJUrgEJaj_7hRPD8w29OwHYnFNY8bco91arilU5VuMceomKoihhdLgu9lfCAnr21NoJLI2LSsoWH06uSpTAPQefQU"
+    apiKey = ""
     data = loadData.Dataset(apiKey, debug=False)
 
     print("Preprocessing...")

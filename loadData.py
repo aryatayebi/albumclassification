@@ -175,10 +175,10 @@ class Dataset():
 
 if __name__=='__main__':
 
-    apiKey = "BQCs9W_Fy8Dw1qlrYCuwRnt_E-ZPMvN7v6MNyVN8JHjgEFZURCmNmo93hH4mE2KgupSq5qYaq2r0YDIVpd4_WHX6fbLF7fBJc3YVKmYzlo-YgFNq6D3Y7A5CFVjF2MpngvHVTNNfT-AdfotKi0M"
-    debug = True
+    apiKey = "BQBhGY0fT-howXYjtpJxTtZJ6eX-bb7vyuVmbQUsOvsh0b4ok4yLLpSp7NgULpRIYI0gN5w83JhFwaVjyam15SfpFY8JK_tl7depMXR77b_t_KXn47zO0lB31UQMkdF3m35yEf01i7JhJQ2uflk"
+    debug = False
     data = Dataset(apiKey, debug)
 
-    datf = data.preprocessKNN()
+    print(data.all_data.shape)
 
     print("loadData is complete")
