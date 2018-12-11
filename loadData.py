@@ -124,53 +124,69 @@ class Dataset():
 
         return df
 
-    # def preprocessCNN(self):
-    #     labels = np.zeros(self.all_data.shape[0], dtype=int)
-    #     new_images = []
-    #
-    #     for index, row in self.all_data.iterrows():
-    #         genre = row['genre']
-    #
-    #         if (genre == 'electronic'):
-    #             labels[index] = 0
-    #
-    #         if (genre == 'indie'):
-    #             labels[index] = 1
-    #
-    #         if (genre == 'pop'):
-    #             labels[index] = 2
-    #
-    #         if (genre == 'metal'):
-    #             labels[index] = 3
-    #
-    #         if (genre == 'alternative rock'):
-    #             labels[index] = 4
-    #
-    #         if (genre == 'classic rock'):
-    #             labels[index] = 5
-    #
-    #         if (genre == 'jazz'):
-    #             labels[index] = 6
-    #
-    #         if (genre == 'folk'):
-    #             labels[index] = 7
-    #
-    #         if (genre == 'Hip-Hop'):
-    #             labels[index] = 8
-    #
-    #         if (genre == 'Classical'):
-    #             labels[index] = 9
-    #
-    #         img = (row['image'])
-    #         img2 = cv2.resize(img, (32, 32))
-    #         tp = np.transpose(img2)
-    #         new_images.append(tp)
-    #
-    #     new_images = np.array(new_images)
-    #     torch_images = torch.from_numpy(new_images)
-    #     torch_labels = torch.from_numpy(labels)
-    #     return torch.utils.data.TensorDataset(torch_images, torch_labels)
+    def preprocessCNN(self):
+        labels = np.zeros(self.all_data.shape[0], dtype=int)
+        new_images = []
 
+        self.all_data = shuffle(self.all_data)
+
+        # Grab genres and put into an nparray
+        for index, row in self.all_data.iterrows():
+            genre = row['genre']
+
+            if (genre == 'electronic'):
+                labels[index] = 0
+
+            if (genre == 'indie'):
+                labels[index] = 1
+
+            if (genre == 'pop'):
+                labels[index] = 2
+
+            if (genre == 'metal'):
+                labels[index] = 3
+
+            if (genre == 'alternative%20rock'):
+                labels[index] = 4
+
+            if (genre == 'classic%20rock'):
+                labels[index] = 5
+
+            if (genre == 'jazz'):
+                labels[index] = 6
+
+            if (genre == 'folk'):
+                labels[index] = 7
+
+            if (genre == 'rap'):
+                labels[index] = 8
+
+            if (genre == 'classical'):
+                labels[index] = 9
+
+            img = (row['image'])
+            img2 = cv2.resize(img, (64, 64))
+            tp = np.transpose(img2)
+            new_images.append(tp)
+
+        lSize = labels.size
+
+        # Split Training and Testing into Train and Test Sizes
+        trainSize = int(lSize * .8)
+        testSize = int(lSize * .2)
+        if ((testSize + trainSize) < lSize):
+            trainSize = trainSize + 1
+
+        # Numpy To Pytorch Tensor Transformation
+        torch_labels = torch.from_numpy(labels)
+        new_images = np.array(new_images)
+        torch_images = torch.from_numpy(new_images)
+        fullDataset = torch.utils.data.TensorDataset(torch_images, torch_labels)
+
+        # Splitting Dataset
+        trainDataset, testDataset = torch.utils.data.random_split(fullDataset, [trainSize, testSize])
+
+        return trainDataset, testDataset
 
 
 if __name__=='__main__':
